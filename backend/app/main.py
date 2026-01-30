@@ -1,5 +1,8 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from app.services.recipe import generate_recipe
 
 app = FastAPI()
 
@@ -36,3 +39,11 @@ async def upload_video(file: UploadFile = File(...)):
         ],
     }
     return recipe
+
+# New AI recipe generation endpoint
+class TranscriptRequest(BaseModel):
+    transcript: str
+
+@app.post("/generate-recipe")
+def generate_recipe_endpoint(data: TranscriptRequest):
+    return generate_recipe(data.transcript)
