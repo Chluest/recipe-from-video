@@ -1,7 +1,8 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
+import shutil
+from app.services.transcription import transcribe_audio
 from app.services.recipe import generate_recipe
 
 app = FastAPI()
@@ -20,25 +21,22 @@ async def health():
 
 @app.post("/upload")
 async def upload_video(file: UploadFile = File(...)):
-    # Fake processing for MVP
-    recipe = {
-        "title": "Creamy Garlic Pasta",
-        "ingredients": [
-            "200g pasta",
-            "2 cloves garlic",
-            "1 cup heavy cream",
-            "Salt",
-            "Black pepper",
-        ],
-        "steps": [
-            "Boil the pasta until al dente.",
-            "Sauté garlic in a pan until fragrant.",
-            "Add cream and simmer.",
-            "Toss pasta with sauce.",
-            "Season and serve.",
-        ],
+    video_path = f"temp_{file.filename}"
+
+    # Save uploaded file
+    with open(video_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Transcribe
+    transcript = transcribe_audio(video_path)
+
+    # Generate recipe
+    recipe = generate_recipe(transcript)
+
+    return {
+        "transcript": transcript,
+        "recipe": recipe
     }
-    return recipe
 
 # New AI recipe generation endpoint
 class TranscriptRequest(BaseModel):
