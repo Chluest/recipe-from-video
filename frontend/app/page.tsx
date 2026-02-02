@@ -34,7 +34,12 @@ export default function Home() {
       });
 
       const data = await res.json();
-      setRecipe(data);
+      console.log("API response:", data);
+
+      if (!data.recipe?.ingredients || !data.recipe?.steps) {
+        throw new Error("Invalid recipe response");
+      }
+      setRecipe(data.recipe);
     } catch (err) {
       console.error(err);
       alert("Error uploading video");
@@ -67,25 +72,25 @@ export default function Home() {
         </button>
 
         {recipe && (
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-2">
-              {recipe.title}
-            </h2>
-
+          <>
             <h3 className="font-medium">Ingredients</h3>
             <ul className="list-disc list-inside mb-2">
               {recipe.ingredients.map((item, i) => (
                 <li key={i}>{item}</li>
               ))}
             </ul>
+          </>
+        )}
 
+        {recipe && (
+          <>
             <h3 className="font-medium">Steps</h3>
             <ol className="list-decimal list-inside">
               {recipe.steps.map((step, i) => (
                 <li key={i}>{step}</li>
               ))}
             </ol>
-          </div>
+          </>
         )}
         
       </div>
